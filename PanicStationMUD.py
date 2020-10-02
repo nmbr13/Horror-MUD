@@ -79,7 +79,7 @@ rooms = {
         "exits": {},
         "status": "Fixed",
         "hazards" : [],
-        "items": ['flamethrower', 'fuel']
+        "items": None
     }
 }
 
@@ -92,8 +92,7 @@ for location in location_list:
                         , 'status': 'Broken'
                         , "exits": {"hub":'hub'}
                         , "hazards" : []
-                        , "items": []
-                        }
+                        , "items": []}
 
 needed_repairs = len(location_list)
 
@@ -109,6 +108,42 @@ players = {}
 
 # start the server
 mud = MudServer()
+
+
+#Utility functions
+def message_room(msg):
+    # go through every player in the game
+    for pid, pl in players.items():
+        # if they're in the same room as the player
+        if players[pid]["room"] == players[id]["room"]:
+            # send them a message telling them what the player said
+            mud.send_message(pid, msg)
+
+def message_all(msg):
+    # go all the players in the game
+    for pid, pl in players.items():
+        # send each player a message to tell them about the new player
+        mud.send_message(pid, msg)
+
+def message_player(id,msg):
+    for pid,pl in players.items():
+        if players[pid] == id:
+            mud.send_message(pid,msg)
+
+def damage_player(id,ammount,msg):
+    for pid, pl in players.items():
+        if players[pid] == id:
+            players[pid]['health'] = players[pid]['health'] - ammount
+            mud.send_message(pid,msg)
+
+def damage_room(ammount,msg):
+    for pid, pl in players.items():
+        # if they're in the same room as the player
+        if players[pid]["room"] == players[id]["room"]:
+            players[pid]['health'] = players[pid]['health'] - amount
+            # send them a message telling them what the player said
+            mud.send_message(pid, msg)
+
 
 # main game loop. We loop forever (i.e. until the program is terminated)
 while True:
@@ -135,7 +170,6 @@ while True:
             "room": None,
             "health": 100,
             "sabateur" : 'No',
-            "items" : [],
             "temp" : np.random.randint(979, 987)/10,
         }
 
@@ -243,14 +277,9 @@ while True:
                                      + "specified, e.g. 'attack <player_name>'")
         # 'say' command
         elif command == "say":
+            msg = params
+            message_room(msg)
 
-            # go through every player in the game
-            for pid, pl in players.items():
-                # if they're in the same room as the player
-                if players[pid]["room"] == players[id]["room"]:
-                    # send them a message telling them what the player said
-                    mud.send_message(pid, "{} says: {}".format(
-                                                players[id]["name"], params))
 
         # 'look' command
         elif command == "look":
@@ -348,6 +377,7 @@ while True:
             else:
                 pass
 
+        # some other, unrecognised command
         elif command == "dance":
             mud.send_message(id, "you begin dancing a merry jig")
 
@@ -363,19 +393,6 @@ while True:
             mud.send_message(id, "You currently have: ")
             for item, count in inventory_list.items():
                 mud.send_message(id, "{} :: {}".format(items, count))
-
-        elif command == "search":
-            cr = players[id]['room']
-            mud.send_message(id, "This room contains: ")
-            for item, qty in Counter(rooms[cr]['items']).items():
-                mud.send_message(id, "{} :: {}".format(item, qty))
-
-        elif command == "pickup":
-            cr = players[id]['room']
-            if params in rooms[cr]['items']:
-                players[id]['items'].append(params)
-                mud.send_message(id, "{} added to  your inventory".format(params))
-                rooms[cr]['items'].remove(params)
 
         elif command == "ship_status":
             if players[id]['room'] != 'hub':
@@ -477,11 +494,6 @@ while True:
                 players[id]["items"].remove("fuel")
                 if "fuel" not in players[id]["items"]:
                     mud.send_message(id, "however you are out of fuel")
-            elif "flamethrower" in players[id]['items']:
-                mud.send_message(id, "You don't have any fuel")
-            else:
-                mud.send_message(id, "You don't have a flamethrower")
-
 
 
 
@@ -512,7 +524,7 @@ while True:
 
 # Admin Commands
         elif command == "roomstatus":
-            if players[id]['name'] == "Capt. Reynolds":
+            if players[id]['name'] == "Capt. Reynolds"
                 print(rooms[players[id]['room']])
 
 
