@@ -78,7 +78,7 @@ rooms = {
         "exits": {},
         "status": "Fixed",
         "hazards" : [],
-        "items": None
+        "items": []
     }
 }
 
@@ -240,14 +240,19 @@ while True:
                                      + "specified, e.g. 'attack <player_name>'")
         # 'say' command
         elif command == "say":
-
             # go through every player in the game
             for pid, pl in players.items():
                 # if they're in the same room as the player
                 if players[pid]["room"] == players[id]["room"]:
                     # send them a message telling them what the player said
-                    mud.send_message(pid, "{} says: {}".format(
-                                                players[id]["name"], params))
+                    mud.send_message(pid, "{} says: {}".format(players[id]["name"], params))
+
+        # 'use' command
+        elif command == "use":
+            # Check if item in inventory
+            # Message player
+            # Message others in the room
+            # Apply Effect
 
         # 'look' command
         elif command == "look":
