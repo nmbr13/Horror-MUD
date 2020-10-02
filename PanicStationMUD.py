@@ -463,6 +463,11 @@ while True:
                 players[id]["items"].remove("fuel")
                 if "fuel" not in players[id]["items"]:
                     mud.send_message(id, "however you are out of fuel")
+            elif "flamethrower" in players[id]['items']:
+                mud.send_message(id, "You don't have any fuel")
+            else:
+                mud.send_message(id, "You don't have a flamethrower")
+
 
 
 
@@ -493,7 +498,7 @@ while True:
 
 # Admin Commands
         elif command == "roomstatus":
-            if players[id]['name'] == "Capt. Reynolds"
+            if players[id]['name'] == "Capt. Reynolds":
                 print(rooms[players[id]['room']])
 
 
