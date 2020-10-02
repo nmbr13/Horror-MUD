@@ -76,7 +76,9 @@ rooms = {
         "description": "Your party stands around a table discussing how to keep yourselves alive",
         "votes": [],
         "exits": {},
-        "status": "Fixed"
+        "status": "Fixed",
+        "hazards" : [],
+        "items": None
     }
 }
 
@@ -84,7 +86,12 @@ for location in location_list:
     rand_event = np.random.randint(0, len(event_list))
     event = event_list[rand_event]
     description = f"{event} in the {location}"
-    rooms[location] = {'description':description, "votes":[], 'status': 'Broken', "exits": {"hub":'hub'}}
+    rooms[location] = {'description':description,
+                        "votes":[]
+                        , 'status': 'Broken'
+                        , "exits": {"hub":'hub'}
+                        , "hazards" : []
+                        , "items": []}
 
 needed_repairs = len(location_list)
 
@@ -112,6 +119,7 @@ while True:
     # us up-to-date information
     mud.update()
 
+
     # go through any newly connected players
     for id in mud.get_new_players():
 
@@ -124,7 +132,8 @@ while True:
             "name": None,
             "room": None,
             "health": 100,
-            "sabateur" : None,
+            "sabateur" : 'No',
+            "temp" : np.random.randint(979, 987)/10,
         }
 
         # send the new player a prompt for their name
@@ -191,16 +200,44 @@ while True:
         elif command == "help":
 
             # send the player back the list of possible commands
-            mud.send_message(id, "Commands:")
-            mud.send_message(id, "  say <message>  - Says something out loud, "
-                                 + "e.g. 'say Hello'")
-            mud.send_message(id, "  look           - Examines the "
-                                 + "surroundings, e.g. 'look'")
-            mud.send_message(id, "  go <exit>      - Moves through the exit "
-                                 + "specified, e.g. 'go outside'")
-            mud.send_message(id, "  dance      - Causes fun times to ensue "
-                                 + "specified, e.g. 'dance'")
-
+            if players[id]['sabateur'] != "Yes":
+                mud.send_message(id, "Player Commands:")
+                mud.send_message(id, "  say <message>  - Says something out loud, "
+                                     + "e.g. 'say Hello'")
+                mud.send_message(id, "  look           - Examines the "
+                                     + "surroundings, e.g. 'look'")
+                mud.send_message(id, "  go <exit>      - Moves through the exit "
+                                     + "specified, e.g. 'go outside'")
+                mud.send_message(id, "  ship_status <exit> - Check Room Statuses; Must be in 'hub'"
+                                     + "specified, e.g. 'ship_status'")
+                mud.send_message(id, "  dance      - Causes fun times to ensue "
+                                     + "specified, e.g. 'dance'")
+                mud.send_message(id, "  namechange - Causes fun times to ensue "
+                                     + "specified, e.g. 'dance'")
+                mud.send_message(id, "  repair      - Attempts to fix a current room "
+                                     + "specified, e.g. 'repair'")
+                mud.send_message(id, "  attack      - Cause harm to another player in same room "
+                                     + "specified, e.g. 'attack <player_name>'")
+            else:
+                mud.send_message(id, "Player Commands:")
+                mud.send_message(id, "  say <message>  - Says something out loud, "
+                                     + "e.g. 'say Hello'")
+                mud.send_message(id, "  look           - Examines the "
+                                     + "surroundings, e.g. 'look'")
+                mud.send_message(id, "  go <exit>      - Moves through the exit "
+                                     + "specified, e.g. 'go outside'")
+                mud.send_message(id, "  ship_status <exit> - Check Room Statuses; Must be in 'hub'"
+                                     + "specified, e.g. 'ship_status'")
+                mud.send_message(id, "  dance      - Causes fun times to ensue "
+                                     + "specified, e.g. 'dance'")
+                mud.send_message(id, "  repair      - Attempts to fix a current room "
+                                     + "specified, e.g. 'repair'")
+                mud.send_message(id, "  attack      - Cause harm to another player in same room "
+                                     + "specified, e.g. 'attack <player_name>'")
+                mud.send_message(id, "  sabotage      - Attempts to damage a current room "
+                                     + "specified, e.g. 'repair'")
+                mud.send_message(id, "  hatch_enemy    - Places an enemy which will ambush players once  "
+                                     + "specified, e.g. 'attack <player_name>'")
         # 'say' command
         elif command == "say":
 
@@ -287,6 +324,27 @@ while True:
                 # send back an 'unknown exit' message
                 mud.send_message(id, "Unknown exit '{}'".format(ex))
 
+            # When the player enters the room, check for hazards
+            if len(rooms[players[id]['room']]['hazards']) != 0 and players[id]['sabateur'] != 'Yes':
+                print("check eggs")
+                if 'enemy' in rooms[players[id]['room']]['hazards']:
+                    mud.send_message(id, "you hear the click of carapaced feet skitter across the metal floor")
+                    time.sleep(2)
+                    if np.random.randint(0,10) >=7:
+                        players[id][health] -= 30
+                        mud.send_message(id, "A newly hatched creature lunged from the shadows. Take 30dmg")
+                        for id_iter in players.keys():
+                            if players[id_iter]['room'] == current_room:
+                                mud.send_message(id_iter, "a creature springs from the darkness attacking {}".format(players[id]['name']))
+                                hzd_name = rooms[players[id]['room']]['hazards']
+                                rooms[players[id]['room']]['hazards'].pop(hzd_name)
+                    else:
+                        mud.send_message(id, "Your presense appears to be unnoticed. . . for now")
+
+            #If no hazards do nothing
+            else:
+                pass
+
         # some other, unrecognised command
         elif command == "dance":
             mud.send_message(id, "you begin dancing a merry jig")
@@ -298,7 +356,7 @@ while True:
             mud.send_message(id, "you currently have {} health remaining".format(str(players[id]['health'])))
 
         elif command == "ship_status":
-            if player[id]['room'] != 'hub':
+            if players[id]['room'] != 'hub':
                 mud.send_message(id, "ship status can only be checked in the hub")
             else:
                 for r in rooms.keys():
@@ -309,6 +367,8 @@ while True:
             players[id]['name'] = params
             for id in players.keys():
                 mud.send_message(id, "{} will hence forth be called {}".format(previous_name, params))
+            if params == "Capt. Reynolds":
+                mud.send_message(id, "Welcome Back Sir")
 
         elif command == "beginthechase":
             if starting_var == 'peace':
@@ -317,10 +377,14 @@ while True:
                 else:
                     mud.send_message(id, "Begin the Hunt")
                     player_ids = list(players.keys())
-                    rand_int = np.random.randint(0, len(players)-1)
-                    players[player_ids[rand_int]]['sabateur'] = "Yes"
-                    mud.send_message(rand_int, "You are the sabateur")
-                    starting_var = "war"
+                    if len(player_ids) == 0:
+                        players[0]['sabateur'] = "Yes"
+                        break
+                    else:
+                        rand_int = np.random.randint(0, len(players.keys()))
+                        players[player_ids[rand_int]]['sabateur'] = "Yes"
+                        mud.send_message(rand_int, "You are the sabateur")
+                        starting_var = "war"
             else:
                 mud.send_message(id, "The hunt has already begun")
 
@@ -388,18 +452,32 @@ while True:
             else:
                 mud.send_message(id, "This room is too well guarded to make an attack here")
 
-        elif command == "sabotage":
-            if player[id][sabateur] != 'Yes':
+        elif command == "sabotage": #Method of breaking a room
+            if players[id]["sabateur"] != 'Yes':
                 mud.send_message(id, "Why would you want to wreck your own ship?")
             else:
                 mud.send_message(id, "A few broken hoses, a few loose wire and . . .BOOM !!!")
-                rooms[player[id][room]]['status'] = "Broken"
+                rooms[players[id]['room']]['status'] = "Broken"
                 needed_repairs += 1
 
-        elif command == "self_harm":
-            players[id]['health'] -= 20
-            mud.send_message(id, "you take 20")
+        elif command == "hatch_enemy": #place an enemy hatchling in a room
+            if players[id]['sabateur'] != 'Yes':
+                mud.send_message(id, "You are not an alien")
+            else:
+                current_room = players[id]['room']
+                rooms[current_room]['hazards'].append('enemy')
+                mud.send_message(id, "You gently place an egg in the shadows of the room")
 
+        elif command == "enemystatus":
+            if players[id]['sabateur'] != "Yes":
+                mud.send_message(id, "Enemies lurk in the shadows just outside of view")
+            else:
+                for r in rooms.keys():
+                    if len(rooms[r]['hazards']) > 0:
+                        mud.send_message(id, "{} Enemies in {}".format(len(rooms[r]['hazards']), r))
+
+        elif command == "roomstatus":
+            print(rooms[players[id]['room']])
 
         else:
             # send back an 'unknown command' message
