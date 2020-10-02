@@ -23,6 +23,7 @@ author: Mark Frimston - mfrimston@gmail.com
 
 import time
 import numpy as np
+from collections import Counter
 
 # import the MUD server class
 from mudserver import MudServer
@@ -78,7 +79,7 @@ rooms = {
         "exits": {},
         "status": "Fixed",
         "hazards" : [],
-        "items": []
+        "items": None
     }
 }
 
@@ -240,19 +241,14 @@ while True:
                                      + "specified, e.g. 'attack <player_name>'")
         # 'say' command
         elif command == "say":
+
             # go through every player in the game
             for pid, pl in players.items():
                 # if they're in the same room as the player
                 if players[pid]["room"] == players[id]["room"]:
                     # send them a message telling them what the player said
-                    mud.send_message(pid, "{} says: {}".format(players[id]["name"], params))
-
-        # 'use' command
-        elif command == "use":
-            # Check if item in inventory
-            # Message player
-            # Message others in the room
-            # Apply Effect
+                    mud.send_message(pid, "{} says: {}".format(
+                                                players[id]["name"], params))
 
         # 'look' command
         elif command == "look":
@@ -358,7 +354,14 @@ while True:
             print(players)
 
         elif command == "myhealth":
+            # Check current health
             mud.send_message(id, "you currently have {} health remaining".format(str(players[id]['health'])))
+
+        elif command == "view_inventory":
+            inventory_list = Counter(players[id]['items'])
+            mud.send_message(id, "You currently have: ")
+            for item, count in inventory_list.items():
+                mud.send_message(id, "{} :: {}".format(items, count))
 
         elif command == "ship_status":
             if players[id]['room'] != 'hub':
@@ -373,23 +376,8 @@ while True:
             for id in players.keys():
                 mud.send_message(id, "{} will hence forth be called {}".format(previous_name, params))
             if params == "Capt. Reynolds":
-                mud.send_message(id, "Welcome Back Sir! :)")
+                mud.send_message(id, "Welcome Back Sir")
 
-        elif command == "beginthechase":
-            if starting_var == 'peace':
-                if players[id]['name'] != "Capt. Reynolds":
-                    mud.send_message(id, "Insufficient Authority")
-                else:
-                    mud.send_message(id, "Begin the Hunt")
-                    player_ids = list(players.keys())
-                    if len(player_ids) == 0:
-                        players[0]['sabateur'] = "Yes"
-                        break
-                    else:
-                        rand_int = np.random.randint(0, len(players.keys()))
-                        players[player_ids[rand_int]]['sabateur'] = "Yes"
-                        mud.send_message(rand_int, "You are the sabateur")
-                        starting_var = "war"
             else:
                 mud.send_message(id, "The hunt has already begun")
 
@@ -457,6 +445,28 @@ while True:
             else:
                 mud.send_message(id, "This room is too well guarded to make an attack here")
 
+# Weapon specific methods
+
+        elif command == "torch_room":
+            if "flamethrower" in players[id]['items'] and "fuel" in players[id]['items']:
+                current_room = players[id]['room']
+                for id_iter in players.keys():
+                    if players[id_iter]['room'] == current_room:
+                        mud.send_message(id_iter, "{} flicks his zippo and with a grin. . . ".format(players[id]['name']))
+                        time.sleep(.5)
+                        mud.send_message(id_iter, "ignites his flamethrower".format(players[id]['name']))
+                        if id != id_iter:
+                            mud.send_message(id_iter, "Caught in the rampant flames, you take 10 damage")
+                            players[id_iter]['health'] -= 10
+                rooms[current_room]['hazards'] = []
+                mud.send_message(id, "You have cleared the room of enemies")
+                players[id]["items"].remove("fuel")
+                if "fuel" not in players[id]["items"]:
+                    mud.send_message(id, "however you are out of fuel")
+
+
+
+# Sabateur Commands
         elif command == "sabotage": #Method of breaking a room
             if players[id]["sabateur"] != 'Yes':
                 mud.send_message(id, "Why would you want to wreck your own ship?")
@@ -481,8 +491,28 @@ while True:
                     if len(rooms[r]['hazards']) > 0:
                         mud.send_message(id, "{} Enemies in {}".format(len(rooms[r]['hazards']), r))
 
+# Admin Commands
         elif command == "roomstatus":
-            print(rooms[players[id]['room']])
+            if players[id]['name'] == "Capt. Reynolds"
+                print(rooms[players[id]['room']])
+
+
+        elif command == "beginthechase":
+            if starting_var == 'peace':
+                if players[id]['name'] != "Capt. Reynolds":
+                    mud.send_message(id, "Insufficient Authority")
+                else:
+                    mud.send_message(id, "Begin the Hunt")
+                    player_ids = list(players.keys())
+                    if len(player_ids) == 0:
+                        players[0]['sabateur'] = "Yes"
+                        break
+                    else:
+                        rand_int = np.random.randint(0, len(players.keys()))
+                        players[player_ids[rand_int]]['sabateur'] = "Yes"
+                        mud.send_message(rand_int, "You are the sabateur")
+                        starting_var = "war"
+
 
         else:
             # send back an 'unknown command' message
