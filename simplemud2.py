@@ -111,6 +111,7 @@ while True:
         players[id] = {
             "name": None,
             "room": None,
+            "sabateur" : None,
         }
 
         # send the new player a prompt for their name
@@ -265,6 +266,9 @@ while True:
                 mud.send_message(id, "Unknown exit '{}'".format(ex))
 
         # some other, unrecognised command
+        elif command == "dance":
+            mud.send_message(id, "you begin dancing a merry jig")
+            
         else:
             # send back an 'unknown command' message
             mud.send_message(id, "Unknown command '{}'".format(command))
