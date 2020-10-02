@@ -42,7 +42,7 @@ event_list  = ["A pressurized line has ruptured",
                         "A series of small explosions have caused damage",
                         "A power coupling has untethered",
                         "Falling debris has trapped crew members"]
-        
+
 location_list = ["cargo hold",
                 "medical bay",
                 "biology labratory",
@@ -69,12 +69,12 @@ location_list = ["cargo hold",
                 "short-field communications console room"]
 
 rooms = {
-    "Hub": {
+    "hub": {
         "description": "Your party stands around a table discussing how to keep yourselves alive",
-        "exits": {"outside": "Outside"}
+        "exits": {}
     }
 }
-                 
+
 for loc in np.arange(0,len(location_list)):
     location = location_list[loc]
     rand_event = np.random.randint(0, len(event_list))
@@ -84,8 +84,8 @@ for loc in np.arange(0,len(location_list)):
 
 #Generate Hub Exits:
 for k in rooms.keys():
-    if k != 'Hub':
-        rooms['Hub']['exits'][k] = k
+    if k != 'hub':
+        rooms['hub']['exits'][k] = k
 
 
 # stores the players in the game
@@ -275,7 +275,7 @@ while True:
         # some other, unrecognised command
         elif command == "dance":
             mud.send_message(id, "you begin dancing a merry jig")
-            
+
         else:
             # send back an 'unknown command' message
             mud.send_message(id, "Unknown command '{}'".format(command))
