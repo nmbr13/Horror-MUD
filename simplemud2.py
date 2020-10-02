@@ -149,7 +149,8 @@ while True:
             continue
 
         #select random spy
-        for np.random.randint(0, len(players)):
+        # for np.random.randint(0, len(players)):
+
 
 
         # if the player hasn't given their name yet, use this first command as
@@ -279,8 +280,9 @@ while True:
         # some other, unrecognised command
         elif command == "dance":
             mud.send_message(id, "you begin dancing a merry jig")
+
         elif command == "player_list":
-            mud.send_message(id, str(players))
+            mud.send_message(id, str(players[id]))
         else:
             # send back an 'unknown command' message
             mud.send_message(id, "Unknown command '{}'".format(command))
