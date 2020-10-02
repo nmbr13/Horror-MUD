@@ -29,6 +29,8 @@ from mudserver import MudServer
 
 
 # structure defining the rooms in the game. Try adding more rooms to the game!
+starting_var = "peace"
+
 event_list  = ["A pressurized line has ruptured",
                         "An air lock has broken",
                         "Electrical lines are damaged",
@@ -44,7 +46,7 @@ event_list  = ["A pressurized line has ruptured",
                         "Falling debris has trapped crew members"]
 
 location_list = ["cargo hold",
-                "medical bay",
+                "infirmary",
                 "biology labratory",
                 "service corridor",
                 "maintenance crawlspace",
@@ -52,35 +54,40 @@ location_list = ["cargo hold",
                 "armory"
                 "cockpit",
                 "command bridge",
-                "crews living quarters",
-                "logistics facility",
-                "dormatories",
+                "living quarters",
+                # "logistics facility",
+                # "dormatories",
                 "dining hall",
-                "tech labratory",
-                "engine room alpha",
-                "engine room beta",
-                "fore passage",
-                "aft passageway",
-                "infirmary",
-                "passenger quarters",
-                "warpdrive containment unit",
-                "captains quarters",
-                "long-distance communications hub",
-                "short-field communications console room"]
+                # "tech labratory",
+                # "engine room alpha",
+                # "engine room beta",
+                # "fore passage",
+                # "aft passageway",
+                # ,
+                # "passenger quarters",
+                # "warpdrive containment unit",
+                # "captains quarters",
+                # "long-distance communications hub",
+                # "short-field communications console room"
+                ]
 
 rooms = {
     "hub": {
         "description": "Your party stands around a table discussing how to keep yourselves alive",
-        "exits": {}
+        "votes": [],
+        "exits": {},
+        "status": "Fixed"
     }
 }
 
-for loc in np.arange(0,len(location_list)):
-    location = location_list[loc]
+for location in location_list:
     rand_event = np.random.randint(0, len(event_list))
     event = event_list[rand_event]
     description = f"{event} in the {location}"
-    rooms[location] = {'description':description, "exits": {"hub":'hub'}}
+    rooms[location] = {'description':description, "votes":[], 'status': 'Broken', "exits": {"hub":'hub'}}
+
+needed_repairs = len(location_list)
+
 
 #Generate Hub Exits:
 for k in rooms.keys():
@@ -116,6 +123,7 @@ while True:
         players[id] = {
             "name": None,
             "room": None,
+            "health": 100,
             "sabateur" : None,
         }
 
@@ -147,6 +155,8 @@ while True:
         # move on to the next one
         if id not in players:
             continue
+        if players[id]['health'] <= 0:
+            mud.send_message(id, "You Have Died. GAME OVER")
 
         #select random spy
         # for np.random.randint(0, len(players)):
@@ -155,7 +165,7 @@ while True:
 
         # if the player hasn't given their name yet, use this first command as
         # their name and move them to the starting room.
-        if players[id]["name"] is None:
+        elif players[id]["name"] is None:
 
             players[id]["name"] = command
             players[id]["room"] = "hub"
@@ -281,8 +291,116 @@ while True:
         elif command == "dance":
             mud.send_message(id, "you begin dancing a merry jig")
 
-        elif command == "player_list":
-            mud.send_message(id, str(players[id]))
+        elif command == "playerstatus":
+            print(players)
+
+        elif command == "myhealth":
+            mud.send_message(id, "you currently have {} health remaining".format(str(players[id]['health'])))
+
+        elif command == "ship_status":
+            if player[id]['room'] != 'hub':
+                mud.send_message(id, "ship status can only be checked in the hub")
+            else:
+                for r in rooms.keys():
+                    mud.send_message(id, "{} :: {}".format(r, rooms[r]['status']))
+
+        elif command == "namechange":
+            previous_name = players[id]['name']
+            players[id]['name'] = params
+            for id in players.keys():
+                mud.send_message(id, "{} will hence forth be called {}".format(previous_name, params))
+
+        elif command == "beginthechase":
+            if starting_var == 'peace':
+                if players[id]['name'] != "Capt. Reynolds":
+                    mud.send_message(id, "Insufficient Authority")
+                else:
+                    mud.send_message(id, "Begin the Hunt")
+                    player_ids = list(players.keys())
+                    rand_int = np.random.randint(0, len(players)-1)
+                    players[player_ids[rand_int]]['sabateur'] = "Yes"
+                    mud.send_message(rand_int, "You are the sabateur")
+                    starting_var = "war"
+            else:
+                mud.send_message(id, "The hunt has already begun")
+
+        elif command == "repair":
+            current_room = players[id]['room']
+            if rooms[current_room]['status'] != "Broken":
+                mud.send_message(id, "Room is Doing Fine. Must be a False Alarm")
+            else:
+                occupants = []
+                for id_iter in players.keys():
+                    if players[id_iter]['room'] == current_room:
+                        mud.send_message(id_iter, "{} is attempting to conduct repairs in the {}".format(players[id]['name'], current_room))
+
+                mud.send_message(id, "Repairs in progress - 3")
+                time.sleep(1.5)
+                mud.send_message(id, "Repairs in progress - 2")
+                time.sleep(1.5)
+                mud.send_message(id, "Repairs in progress - 1")
+                time.sleep(1.5)
+
+                success_randint = np.random.randint(0,100)
+                if success_randint >= 60: #percent chance of succeeding
+                    rooms[players[id]['room']]['status'] = 'Repaired'
+                    rooms[players[id]['room']]['description'] = 'Everything appears in place and in good working condition'
+                    for id_iter in players.keys():
+                        if players[id_iter]['room'] == current_room:
+                            mud.send_message(id_iter, "{} has successfully repaired the {}".format(players[id]['name'], current_room))
+                            needed_repairs -= 1
+                            if needed_repairs <= 0:
+                                for id_iter in players.keys():
+                                    mud.send_message(id_iter, "The Crew has won the game")
+                            else:
+                                for id_iter in players.keys():
+                                    mud.send_message(id_iter, "{} rooms remaining to be repaired".format(needed_repairs))
+                else:
+                    players[id]['health'] -= 10
+                    mud.send_message(id, "You have failed to successfully make repairs and are hurt in the process. you take 10 damage")
+                    if players[id]['health'] == 0:
+                        for id_iter in players.keys():
+                            mud.send_message(id_iter, "{} has died in the {} attepting to conduct repairs".format(players[id]['name'], current_room))
+                    for id_iter in players.keys():
+                        if players[id_iter]['room'] == current_room:
+                            mud.send_message(id_iter, "{} has failed to make repairs in the {}".format(players[id]['name'], current_room))
+
+        elif command == "attack":
+            # Deal damage to another player:
+            for i in players.keys():
+                if players[i]['name'] == params:
+                    victim_id = i
+            if players[id]['room'] == players[victim_id]['room'] and players[id]['room']!= 'infirmary' and players[id]['room']!= 'hub' :
+
+                if players[id]['sabateur'] == 'Yes':
+                    mud.send_message(id, "Sneaking from the shadows, you attack {}".format(params))
+                else:
+                    mud.send_message(id, "You attack {} !!!".format(params))
+
+                players[victim_id]['health'] -= 20
+                mud.send_message(victim_id, "You are attacked from the shadows !!! Take 20dmg!!!")
+                players[victim_id]['room'] = 'infirmary'
+                time.sleep(2)
+                mud.send_message(victim_id, "You have been found by another crew member and you awake in the infirmary")
+                if players[victim_id]['health'] <=0:
+                    for id_iter in players.keys():
+                        mud.send_message(id_iter, "{} has died in the {} after being ambushed".format(players[id]['name'], current_room))
+            else:
+                mud.send_message(id, "This room is too well guarded to make an attack here")
+
+        elif command == "sabotage":
+            if player[id][sabateur] != 'Yes':
+                mud.send_message(id, "Why would you want to wreck your own ship?")
+            else:
+                mud.send_message(id, "A few broken hoses, a few loose wire and . . .BOOM !!!")
+                rooms[player[id][room]]['status'] = "Broken"
+                needed_repairs += 1
+
+        elif command == "self_harm":
+            players[id]['health'] -= 20
+            mud.send_message(id, "you take 20")
+
+
         else:
             # send back an 'unknown command' message
             mud.send_message(id, "Unknown command '{}'".format(command))
