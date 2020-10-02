@@ -80,7 +80,7 @@ for loc in np.arange(0,len(location_list)):
     rand_event = np.random.randint(0, len(event_list))
     event = event_list[rand_event]
     description = f"{event} in the {location}"
-    rooms[location] = {'description':description, "exits": {"hub"}}
+    rooms[location] = {'description':description, "exits": {"hub":'hub'}}
 
 #Generate Hub Exits:
 for k in rooms.keys():
@@ -147,6 +147,10 @@ while True:
         # move on to the next one
         if id not in players:
             continue
+
+        #select random spy
+        for np.random.randint(0, len(players)):
+
 
         # if the player hasn't given their name yet, use this first command as
         # their name and move them to the starting room.
@@ -275,7 +279,8 @@ while True:
         # some other, unrecognised command
         elif command == "dance":
             mud.send_message(id, "you begin dancing a merry jig")
-
+        elif command == "player_list":
+            mud.send_message(id, str(players))
         else:
             # send back an 'unknown command' message
             mud.send_message(id, "Unknown command '{}'".format(command))
