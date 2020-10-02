@@ -28,60 +28,16 @@ from mudserver import MudServer
 
 
 # structure defining the rooms in the game. Try adding more rooms to the game!
-event_list  = ["A pressurized line has ruptured",
-                        "An air lock has broken",
-                        "Electrical lines are damaged",
-                        "Exposed wires have shorted",
-                        "Important display panels are cracked",
-                        "A large fire has broken out and is spreading",
-                        "Interior heat shields have broken off",
-                        "Vital systems are shutting down",
-                        "Multiple electrical systems have failed",
-                        "A critical drop in cabin pressure has occured",
-                        "A series of small explosions have caused damage",
-                        "A power coupling has untethered",
-                        "Falling debris has trapped crew members"]
-        
-location_list = ["cargo hold",
-                "medical bay",
-                "biology labratory",
-                "service corridor",
-                "maintenance crawlspace",
-                "observatory",
-                "armory"
-                "cockpit",
-                "command bridge",
-                "crews living quarters",
-                "logistics facility",
-                "dormatories",
-                "dining hall",
-                "tech labratory",
-                "engine room alpha",
-                "engine room beta",
-                "fore passage",
-                "aft passageway",
-                "infirmary",
-                "passenger quarters",
-                "warpdrive containment unit",
-                "captains quarters",
-                "long-distance communications hub",
-                "short-field communications console room"]
-
-mission_rooms = {
-    "Hub": {
-        "description": "Your party stands around a table discussing how to keep yourselves align",
-        "exits": {"outside": "Outside"}
+rooms = {
+    "Tavern": {
+        "description": "You're in a cozy tavern warmed by an open fire.",
+        "exits": {"outside": "Outside"},
+    },
+    "Outside": {
+        "description": "You're standing outside a tavern. It's raining.",
+        "exits": {"inside": "Tavern"},
     }
 }
-                 
-for loc in np.arange(0,len(location_list)):
-    location = location_list[loc]
-    rand_event = np.random.randint(0, len(event_list))
-    event = event_list[rand_event]
-    description = f"{event} in the {location}"
-    mission_rooms[location] = {'description':description, "exits": {"Hub"}}
-
-
 
 # stores the players in the game
 players = {}

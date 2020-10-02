@@ -67,7 +67,7 @@ location_list = ["cargo hold",
                 "long-distance communications hub",
                 "short-field communications console room"]
 
-mission_rooms = {
+rooms = {
     "Hub": {
         "description": "Your party stands around a table discussing how to keep yourselves align",
         "exits": {"outside": "Outside"}
@@ -79,7 +79,7 @@ for loc in np.arange(0,len(location_list)):
     rand_event = np.random.randint(0, len(event_list))
     event = event_list[rand_event]
     description = f"{event} in the {location}"
-    mission_rooms[location] = {'description':description, "exits": {"Hub"}}
+    rooms[location] = {'description':description, "exits": {"Hub"}}
 
 
 
