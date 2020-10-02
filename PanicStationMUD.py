@@ -79,7 +79,7 @@ rooms = {
         "exits": {},
         "status": "Fixed",
         "hazards" : [],
-        "items": None
+        "items": ['flamethrower', 'fuel']
     }
 }
 
@@ -92,7 +92,8 @@ for location in location_list:
                         , 'status': 'Broken'
                         , "exits": {"hub":'hub'}
                         , "hazards" : []
-                        , "items": []}
+                        , "items": []
+                        }
 
 needed_repairs = len(location_list)
 
@@ -134,6 +135,7 @@ while True:
             "room": None,
             "health": 100,
             "sabateur" : 'No',
+            "items" : [],
             "temp" : np.random.randint(979, 987)/10,
         }
 
@@ -361,6 +363,19 @@ while True:
             mud.send_message(id, "You currently have: ")
             for item, count in inventory_list.items():
                 mud.send_message(id, "{} :: {}".format(items, count))
+
+        elif command == "search":
+            cr = players[id]['room']
+            mud.send_message(id, "This room contains: ")
+            for item, qty in Counter(rooms[cr]['items']).items():
+                mud.send_message(id, "{} :: {}".format(item, qty))
+
+        elif command == "pickup":
+            cr = players[id]['room']
+            if params in rooms[cr]['items']:
+                players[id]['items'].append(params)
+                mud.send_message(id, "{} added to  your inventory".format(params))
+                rooms[cr]['items'].remove(params)
 
         elif command == "ship_status":
             if players[id]['room'] != 'hub':
