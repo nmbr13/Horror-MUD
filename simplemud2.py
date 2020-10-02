@@ -80,7 +80,7 @@ for loc in np.arange(0,len(location_list)):
     rand_event = np.random.randint(0, len(event_list))
     event = event_list[rand_event]
     description = f"{event} in the {location}"
-    rooms[location] = {'description':description, "exits": {"Hub"}}
+    rooms[location] = {'description':description, "exits": {"hub"}}
 
 #Generate Hub Exits:
 for k in rooms.keys():
@@ -153,7 +153,7 @@ while True:
         if players[id]["name"] is None:
 
             players[id]["name"] = command
-            players[id]["room"] = "Hub"
+            players[id]["room"] = "hub"
 
             # go all the players in the game
             for pid, pl in players.items():
