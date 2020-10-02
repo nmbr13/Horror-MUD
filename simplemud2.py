@@ -373,7 +373,7 @@ while True:
             for id in players.keys():
                 mud.send_message(id, "{} will hence forth be called {}".format(previous_name, params))
             if params == "Capt. Reynolds":
-                mud.send_message(id, "Welcome Back Sir")
+                mud.send_message(id, "Welcome Back Sir! :)")
 
         elif command == "beginthechase":
             if starting_var == 'peace':
