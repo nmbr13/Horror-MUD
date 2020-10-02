@@ -346,7 +346,6 @@ while True:
             else:
                 pass
 
-        # some other, unrecognised command
         elif command == "dance":
             mud.send_message(id, "you begin dancing a merry jig")
 
