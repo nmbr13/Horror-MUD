@@ -22,6 +22,7 @@ author: Mark Frimston - mfrimston@gmail.com
 """
 
 import time
+import numpy as np
 
 # import the MUD server class
 from mudserver import MudServer
@@ -69,7 +70,7 @@ location_list = ["cargo hold",
 
 rooms = {
     "Hub": {
-        "description": "Your party stands around a table discussing how to keep yourselves align",
+        "description": "Your party stands around a table discussing how to keep yourselves alive",
         "exits": {"outside": "Outside"}
     }
 }
@@ -81,6 +82,10 @@ for loc in np.arange(0,len(location_list)):
     description = f"{event} in the {location}"
     rooms[location] = {'description':description, "exits": {"Hub"}}
 
+#Generate Hub Exits:
+for k in rooms.keys():
+    if k != 'Hub':
+        rooms['Hub']['exits'][k] = k
 
 
 # stores the players in the game
@@ -148,9 +153,9 @@ while True:
         if players[id]["name"] is None:
 
             players[id]["name"] = command
-            players[id]["room"] = "Tavern"
+            players[id]["room"] = "Hub"
 
-            # go through all the players in the game
+            # go all the players in the game
             for pid, pl in players.items():
                 # send each player a message to tell them about the new player
                 mud.send_message(pid, "{} entered the game".format(
@@ -178,6 +183,8 @@ while True:
                                  + "surroundings, e.g. 'look'")
             mud.send_message(id, "  go <exit>      - Moves through the exit "
                                  + "specified, e.g. 'go outside'")
+            mud.send_message(id, "  dance      - Causes fun times to ensue "
+                                 + "specified, e.g. 'dance'")
 
         # 'say' command
         elif command == "say":
