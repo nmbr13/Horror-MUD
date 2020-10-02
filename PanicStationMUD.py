@@ -79,7 +79,7 @@ rooms = {
         "exits": {},
         "status": "Fixed",
         "hazards" : [],
-        "items": ['flamethrower', 'fuel']
+        "items": []
     }
 }
 
@@ -95,14 +95,15 @@ for location in location_list:
                         , "items": []
                         }
 
-needed_repairs = len(location_list)
-
-
 #Generate Hub Exits:
 for k in rooms.keys():
     if k != 'hub':
         rooms['hub']['exits'][k] = k
 
+# Keep track of win-condition
+needed_repairs = len(location_list)
+
+# Distribute Needed Items
 
 # stores the players in the game
 players = {}
@@ -460,27 +461,51 @@ while True:
                 mud.send_message(id, "This room is too well guarded to make an attack here")
 
 # Weapon specific methods
+        elif command == "use":
+            current_room = players[id]['room']
 
-        elif command == "torch_room":
-            if "flamethrower" in players[id]['items'] and "fuel" in players[id]['items']:
-                current_room = players[id]['room']
-                for id_iter in players.keys():
-                    if players[id_iter]['room'] == current_room:
-                        mud.send_message(id_iter, "{} flicks his zippo and with a grin. . . ".format(players[id]['name']))
-                        time.sleep(.5)
-                        mud.send_message(id_iter, "ignites his flamethrower".format(players[id]['name']))
-                        if id != id_iter:
-                            mud.send_message(id_iter, "Caught in the rampant flames, you take 10 damage")
-                            players[id_iter]['health'] -= 10
-                rooms[current_room]['hazards'] = []
-                mud.send_message(id, "You have cleared the room of enemies")
-                players[id]["items"].remove("fuel")
-                if "fuel" not in players[id]["items"]:
-                    mud.send_message(id, "however you are out of fuel")
-            elif "flamethrower" in players[id]['items']:
-                mud.send_message(id, "You don't have any fuel")
-            else:
-                mud.send_message(id, "You don't have a flamethrower")
+            if params = 'flamethrower'
+                if "flamethrower" in players[id]['items'] and "fuel" in players[id]['items']:
+                    for id_iter in players.keys():
+                        if players[id_iter]['room'] == current_room:
+                            mud.send_message(id_iter, "{} flicks his zippo and with a grin. . . ".format(players[id]['name']))
+                            time.sleep(.5)
+                            mud.send_message(id_iter, "ignites his flamethrower".format(players[id]['name']))
+                            if id != id_iter:
+                                mud.send_message(id_iter, "Caught in the rampant flames, you take 10 damage")
+                                players[id_iter]['health'] -= 10
+                    rooms[current_room]['hazards'] = []
+                    mud.send_message(id, "You have cleared the room of enemies")
+                    players[id]["items"].remove("fuel")
+                    if "fuel" not in players[id]["items"]:
+                        mud.send_message(id, "however you are out of fuel")
+                elif "flamethrower" in players[id]['items']:
+                    mud.send_message(id, "You don't have any fuel")
+                else:
+                    mud.send_message(id, "You don't have a flamethrower")
+
+            elif list(params)[0] = 'gun':
+                if 'gun' not in players[id]['items']:
+                    mud.send_message(id, "You don't have a gun")
+                elif 'gun' in players[id]['items'] and 'ammo' not in players[id]['items']:
+                    mud.send_message(id, "Guns requrie ammo to function properly")
+                elif players[id]['room'] != players[target_id]['room']:
+                    mud.send_message(id, "You must be in the same room to shoot someone")
+                else:
+                    target_name = list(params)[1]
+                    for id in players.keys():
+                        if player[id]['name'] == target_name:
+                            target_id = id
+                    players[id]['items'].remove("ammo")
+                    mud.send_message(id, "You shoot {} with your gun".format(target_name))
+                    players[target_id]['health'] -=20
+                    mud.send_message(target_id, "You have been shot! Take 20 damage")
+                    if players[victim_id]['health'] <=0:
+                        for id_iter in players.keys():
+                            mud.send_message(id_iter, "{} has died in the {} after being ambushed".format(players[target_id]['name'], current_room))
+
+
+
 
 
 
