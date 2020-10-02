@@ -406,8 +406,9 @@ while True:
             players[id]['name'] = params
             for id in players.keys():
                 mud.send_message(id, "{} will hence forth be called {}".format(previous_name, params))
-            if params == "Capt. Reynolds":
-                mud.send_message(id, "Welcome Back Sir")
+
+            # if params == "Capt. Reynolds":
+            #     mud.send_message(id, "Welcome Back Sir")
 
             else:
                 mud.send_message(id, "The hunt has already begun")
@@ -524,7 +525,7 @@ while True:
 
 # Admin Commands
         elif command == "roomstatus":
-            if players[id]['name'] == "Capt. Reynolds"
+            if players[id]['name'] == "Capt. Reynolds":
                 print(rooms[players[id]['room']])
 
 
